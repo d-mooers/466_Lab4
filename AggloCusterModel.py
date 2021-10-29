@@ -12,11 +12,18 @@ class AgloClusterModel:
         self.distances = [np.apply_along_axis(distanceFrom(point), 1, data) for point in data]
         self.link = link
         self.tree = {}
+        self.clusters = set() # set of tuples s.t. (0, 1, 2) -> data[0],data[1],data[2] are in the same cluster
         
+    # Adds the given node to the tree
     def addNode(self, distance, index):
         pass
     
+    # Finds the closest clusters, taking into account the link method and 
+    # already existing clusters
     def findClosestPair(self):
         pass
     
-    def 
+    # Iteratively finds the closest clusters and then creates a new cluster
+    # Stops when there is only one cluster
+    def build(self):
+        pass
