@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-
+#java kmeans <Filename> <k>
 def parse():
     parser = argparse.ArgumentParser(description="C45")
     parser.add_argument(

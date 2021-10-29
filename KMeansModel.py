@@ -6,6 +6,7 @@ distanceFrom = lambda origin: lambda destinaton: distance(origin, destinaton)
 distanceFromAll = lambda originPoints: lambda destination:  np.sum(np.apply_along_axis(distanceFrom(destination), 1, originPoints))
     
 class KMeans:
+    
     def __init__(self, data, k, threshold):
         self.data = data
         self.k = k
