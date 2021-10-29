@@ -46,11 +46,8 @@ class KMeans:
     def run(self):
         self.kmeansPlus()
         SSE = self.threshold + 1
-        oldClusters = None
-        oldCentroids = None
         while (not self.canStop(SSE)):
             SSE = self.generateClusters()
-        return oldClusters
     
         
     
