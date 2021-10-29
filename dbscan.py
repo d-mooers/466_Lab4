@@ -1,29 +1,31 @@
-#!/usr/bin/env python3
-# CSC 466
-# Fall 2021
-# Lab 3
-# Dylan Mooers - dmooers@calpoly.edu
-# Justin Huynh - jhuynh42@calpoly.edu
-# Purpose - Builds the underlying tree for C45 and outputs to JSON
-
 import argparse
 import pandas as pd
 import numpy as np
 from pathlib import Path
 
-#java kmeans <Filename> <k>
+#java dbscan <Filename> <epsilon> <NumPoints>
 def parse():
-    parser = argparse.ArgumentParser(description="C45")
+    parser = argparse.ArgumentParser(description="DB Scan")
     parser.add_argument(
         "trainingSetFile", type=str, help="name of csv file containing dataset"
     )
+
     parser.add_argument(
-        "--k",
+        "--epsilon",
+        type=float,
+        nargs="?",
+        default=0.1,
+        help="integer value reresenting number representing epsilon; default is __",
+    )
+
+    parser.add_argument(
+        "--NumPoints",
         type=int,
         nargs="?",
-        default=3,
-        help="integer value reresenting number of neighbors; default is 3",
+        default=5,
+        help="integer value reresenting number representing number of points; default is __"
     )
+
 
     args = vars(parser.parse_args())
     return args
