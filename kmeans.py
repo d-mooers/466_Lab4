@@ -10,6 +10,17 @@ import argparse
 import pandas as pd
 import numpy as np
 from pathlib import Path
+from KMeansModel import KMeans
+from matplotlib import pyplot as plt
+
+def printClusters(clusters):
+    colors = ['red', 'blue', 'green', 'yellow', 'orange', 'teal', 'brown', 'black']
+    for i in range(len(clusters)):
+        cluster = clusters[i]
+        for [x, y] in cluster:
+            plt.plot(x, y, colors[i], marker='o')
+    plt.show()
+
 
 #java kmeans <Filename> <k>
 def parse():
@@ -24,6 +35,14 @@ def parse():
         default=3,
         help="integer value reresenting number of neighbors; default is 3",
     )
+    parser.add_argument(
+        "--t",
+        type=float,
+        nargs="?",
+        default=0.1,
+        help="float value reresenting threshold; default is 0.1",
+    )
+
 
     args = vars(parser.parse_args())
     return args
@@ -32,7 +51,8 @@ def parse():
 def main():
     args = parse()
     training_fname = args["trainingSetFile"]
-    threshold = args["k"]
+    threshold = args["t"]
+    k = args['k']
 
     tmp = pd.read_csv(training_fname)
 
@@ -44,6 +64,10 @@ def main():
     tmp.drop(skip2.index, axis=0,inplace=True)
     tmp.reset_index(drop=True, inplace=True)
     data = np.array(tmp)
+    model = KMeans(data, k, threshold)
+    model.run()
+    print(model.clusters)
+    printClusters(model.clusters)
     
 
 if __name__ == "__main__":

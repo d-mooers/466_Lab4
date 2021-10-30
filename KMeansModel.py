@@ -11,11 +11,13 @@ class KMeans:
         self.data = data
         self.k = k
         self.threshold = threshold
-        self.centroids = np.array()
+        self.centroids = np.array([])
         self.clusters = [[] for _ in range(k)]
         
     # returns the error of centroid selection
     def findNearestCentroid(self, row):
+        # print(row)
+        # print(self.data)
         distances = np.apply_along_axis(distanceFrom(row), 1, self.centroids)
         minDistanceIndex = np.argmin(distances)
         self.clusters[minDistanceIndex].append(row)
@@ -31,23 +33,30 @@ class KMeans:
     # returns the change in centroids
     def calculateNewCentroids(self):
         oldCentroids = self.centroids
-        self.centroids = np.array(self.clusters.map(lambda cluster: np.mean(np.array(cluster), axis=1)))
-        return np.sum(np.sqrt(np.sum((oldCentroids - self.centroids) ** 2, axis=1), axis= 1))
+        self.centroids = np.array(list(map(lambda cluster: np.mean(np.array(cluster), axis=0), self.clusters)))
+        # print(oldCentroids, self.centroids)
+        return np.sum(np.sqrt(np.sum((oldCentroids - self.centroids) ** 2, axis=0)))
     
     def getFarthestPointFromCentroids(self):
         distances = np.apply_along_axis(distanceFromAll(np.array(self.centroids)), 1, self.data)
         return self.data[np.argmax(distances)]
         
     def kmeansPlus(self):
-        self.centroids = [np.mean(self.data, axis=1)]
+        self.centroids = [np.mean(self.data, axis=0)]
         for _ in range(self.k - 1):
             self.centroids.append(self.getFarthestPointFromCentroids())
     
     def run(self):
         self.kmeansPlus()
         SSE = self.threshold + 1
-        while (not self.canStop(SSE)):
-            SSE = self.generateClusters()
+        changeInSSE = (self.threshold + 1) * 100
+        change = self.threshold + 1
+        while (not self.canStop(changeInSSE)):
+            self.clusters = [[] for _ in range(self.k)]
+            newSSE = self.generateClusters()
+            change = self.calculateNewCentroids()
+            changeInSSE = abs(SSE - newSSE)
+            SSE = newSSE
     
         
     
