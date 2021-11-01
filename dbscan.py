@@ -2,6 +2,8 @@ import argparse
 import pandas as pd
 import numpy as np
 from pathlib import Path
+from DBscanModel import DBScanModel
+from kmeans import printClusters
 
 #java dbscan <Filename> <epsilon> <NumPoints>
 def parse():
@@ -34,7 +36,9 @@ def parse():
 def main():
     args = parse()
     training_fname = args["trainingSetFile"]
-    threshold = args["k"]
+    radius = args["epsilon"]
+    minPoints = args["NumPoints"]
+
 
     tmp = pd.read_csv(training_fname)
 
@@ -46,6 +50,11 @@ def main():
     tmp.drop(skip2.index, axis=0,inplace=True)
     tmp.reset_index(drop=True, inplace=True)
     data = np.array(tmp)
+    model = DBScanModel(data, radius, minPoints)
+    clusters = model.build()
+    print(model.type)
+    print(clusters)
+    # printClusters(clusters)
     
 
 if __name__ == "__main__":

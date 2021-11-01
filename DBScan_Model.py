@@ -23,7 +23,7 @@ class DBScanModel:
     def findCorePoints(self):
         neighbors = np.sum(self.distances <= self.radius, axis=0) # [1, 3, 8, 2]
         areCorePoints = neighbors >= self.minPoints # [false, true, true, false]
-        corePoints = areCorePoints.nonzero()[0]
+        corePoints = areCorePoints.nonZero()
         for id in corePoints:
             self.type[id] = CORE
         return corePoints
@@ -42,11 +42,9 @@ class DBScanModel:
             self.type[currentIndex] = BOUNDARY
         else:
             possibleNeighbors = self.distances[currentIndex]
-            #print("Possibleneighbors: ", possibleNeighbors)
             neighbors = possibleNeighbors <= self.radius
-            indices = neighbors.nonzero()[0]
-            for id in indices:
-                self.densityConnectivity(id, clusterNumber)
+            for id in neighbors.nonZero():
+                return self.densityConnectivity(id, clusterNumber)
 
         
     # Iterates through all points, and a point is outlier iff it is not a core point and it was NOT visited
@@ -66,9 +64,8 @@ class DBScanModel:
             self.clusters[clusterNum] = []
             self.densityConnectivity(point, clusterNum)
             if len(self.clusters[clusterNum]) > 0:
-                self.clusters_data.append(self.data[(self.clusters[clusterNum])])
                 clusterNum += 1
-
+                self.clusters_data.append(self.data[(self.clusters[clusterNum])])
         return self.clusters_data
             
 

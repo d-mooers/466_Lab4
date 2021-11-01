@@ -18,7 +18,7 @@ def printClusters(clusters):
     for i in range(len(clusters)):
         cluster = clusters[i]
         for [x, y] in cluster:
-            plt.plot(x, y, colors[i], marker='o')
+            plt.plot(x, y, colors[i % len(colors)], marker='o')
     plt.show()
 
 
