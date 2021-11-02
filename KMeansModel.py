@@ -7,12 +7,13 @@ distanceFromAll = lambda originPoints: lambda destination:  np.sum(np.apply_alon
     
 class KMeans:
     
-    def __init__(self, data, k, threshold):
+    def __init__(self, data, k, threshold, useSSE=True):
         self.data = data
         self.k = k
         self.threshold = threshold
         self.centroids = np.array([])
         self.clusters = [[] for _ in range(k)]
+        self.useSSE = useSSE
         
     # returns the error of centroid selection
     def findNearestCentroid(self, row):
@@ -27,8 +28,11 @@ class KMeans:
     def generateClusters(self):
         return np.sum(np.apply_along_axis(self.findNearestCentroid, 1, self.data) ** 2)
     
-    def canStop(self, SSE):
-        return SSE <= self.threshold
+    def canStop(self, SSE, changeInCentroids):
+        if self.useSSE:
+            print(SSE)
+            return SSE <= self.threshold
+        return changeInCentroids <= self.threshold
     
     # returns the change in centroids
     def calculateNewCentroids(self):
@@ -50,13 +54,14 @@ class KMeans:
         self.kmeansPlus()
         SSE = self.threshold + 1
         changeInSSE = (self.threshold + 1) * 100
-        change = self.threshold + 1
-        while (not self.canStop(changeInSSE)):
+        changeInCentroids = self.threshold + 1
+        while (not self.canStop(changeInSSE, changeInCentroids)):
             self.clusters = [[] for _ in range(self.k)]
             newSSE = self.generateClusters()
-            change = self.calculateNewCentroids()
+            changeInCentroids = self.calculateNewCentroids()
             changeInSSE = abs(SSE - newSSE)
             SSE = newSSE
+        self.SSE = SSE
     
         
     

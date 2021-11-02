@@ -12,14 +12,34 @@ import numpy as np
 from pathlib import Path
 from KMeansModel import KMeans
 from matplotlib import pyplot as plt
+import json
 
 def printClusters(clusters):
     colors = ['red', 'blue', 'green', 'yellow', 'orange', 'teal', 'brown', 'black']
     for i in range(len(clusters)):
         cluster = clusters[i]
         for [x, y] in cluster:
-            plt.plot(x, y, colors[i], marker='o')
+            plt.plot(x, y, colors[i % len(colors)], marker='o')
     plt.show()
+    
+def genClusterData(cluster, centroid):
+    distances = np.sqrt(np.sum((np.array(cluster) - np.array(centroid)) ** 2, axis=0))
+    cluster = np.array(cluster).tolist()
+    return (f'\tCenter: {", ".join([str(x) for x in centroid.tolist()])}\n' +
+    f'\tMax Dist. to Center: {str(distances.max())}\n' +
+    f'\tMin Dist. to Center: {str(distances.min())}\n' +
+    f'\tAvg Dist. to Center: {str(distances.mean())}\n' + 
+    f'\t{str(len(cluster))} Points:\n\t\t' +
+    "\n\t\t".join([", ".join([str(x) for x in point]) for point in cluster]))
+    # return {
+    #     "Number of Points in Cluster": len(cluster),
+    #     "Centroid Coordinates": centroid.tolist(),
+    #     "Maximum Distance": distances.max(),
+    #     "Minimum Distance": distances.min(),
+    #     "Average Distance": distances.mean(),
+    #     "SSE": np.sum(distances),
+    #     "Points in Cluster": ", ".join([f'[{",".join(str(point))}]' for point in cluster])
+    # }
 
 
 #java kmeans <Filename> <k>
@@ -42,6 +62,7 @@ def parse():
         default=0.1,
         help="float value reresenting threshold; default is 0.1",
     )
+    parser.add_argument("--change", default=False, action="store_true", help="use centroid change as stoppage condition")
 
 
     args = vars(parser.parse_args())
@@ -53,6 +74,7 @@ def main():
     training_fname = args["trainingSetFile"]
     threshold = args["t"]
     k = args['k']
+    useSSE = not args['change']
 
     tmp = pd.read_csv(training_fname)
 
@@ -64,10 +86,12 @@ def main():
     tmp.drop(skip2.index, axis=0,inplace=True)
     tmp.reset_index(drop=True, inplace=True)
     data = np.array(tmp)
-    model = KMeans(data, k, threshold)
+    model = KMeans(data, k, threshold, useSSE=useSSE)
     model.run()
-    print(model.clusters)
-    printClusters(model.clusters)
+    print("\n\n".join([f'Cluster {i}:\n {genClusterData(model.clusters[i], model.centroids[i])}' for i in range(len(model.clusters))]))
+    print(f'Total SSE: {model.SSE}')
+    if len(data[0]) == 2:
+        printClusters(model.clusters)
     
 
 if __name__ == "__main__":
