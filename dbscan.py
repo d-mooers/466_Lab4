@@ -5,6 +5,7 @@ from pathlib import Path
 from DBscanModel import DBScanModel
 from kmeans import printClusters
 
+calcSSE = lambda cluster: np.sum((np.array(cluster) - np.mean(cluster, axis=0)) ** 2)
 #java dbscan <Filename> <epsilon> <NumPoints>
 def parse():
     parser = argparse.ArgumentParser(description="DB Scan")
@@ -36,8 +37,6 @@ def genClusterData(cluster):
     if(len(cluster) == 0):
         return ""
     centroid = np.mean(cluster, axis=0)
-    print(centroid)
-    print(cluster)
     distances = np.sqrt(np.sum((np.array(cluster) - np.array(centroid)) ** 2, axis=0))
     cluster = np.array(cluster).tolist()
     return (f'\tCenter: {", ".join([str(x) for x in centroid.tolist()])}\n' +
@@ -67,9 +66,11 @@ def main():
     model = DBScanModel(data, radius, minPoints)
     clusters = model.build()
     outliers = [i for i in range(len(data)) if model.type.get(i) is None]
+    SSE = np.sum([calcSSE(cluster) for cluster in clusters])
 
     print("\n\n".join([f'Cluster {i}:\n {genClusterData(data[(model.clusters[i])])}' for i in range(len(model.clusters))]))
-    print(f'Outliers: {outliers}')
+    print(f'Outliers: {data[(outliers)]}')
+    print(f'Total SSE: {SSE}')
     
     if len(data[0]) == 2:
         if len(outliers) > 0:

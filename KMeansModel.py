@@ -30,19 +30,23 @@ class KMeans:
     
     def canStop(self, SSE, changeInCentroids):
         if self.useSSE:
-            print(SSE)
             return SSE <= self.threshold
         return changeInCentroids <= self.threshold
     
     # returns the change in centroids
     def calculateNewCentroids(self):
         oldCentroids = self.centroids
+        print([len(i) for i in self.clusters])
+        print(self.centroids)
         self.centroids = np.array(list(map(lambda cluster: np.mean(np.array(cluster), axis=0), self.clusters)))
         # print(oldCentroids, self.centroids)
         return np.sum(np.sqrt(np.sum((oldCentroids - self.centroids) ** 2, axis=0)))
     
     def getFarthestPointFromCentroids(self):
         distances = np.apply_along_axis(distanceFromAll(np.array(self.centroids)), 1, self.data)
+        print(self.data[np.argmax(distances)] == self.centroids)
+        i = np.argmax(distances)
+        while np.sum(self.data[np.argmax(distances[i] == self.centroids)
         return self.data[np.argmax(distances)]
         
     def kmeansPlus(self):
