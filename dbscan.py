@@ -66,12 +66,15 @@ def main():
     data = np.array(tmp)
     model = DBScanModel(data, radius, minPoints)
     clusters = model.build()
-    outliers = [i for i in model.type.keys() if model.type[i] == 2]
+    outliers = [i for i in range(len(data)) if model.type.get(i) is None]
 
     print("\n\n".join([f'Cluster {i}:\n {genClusterData(data[(model.clusters[i])])}' for i in range(len(model.clusters))]))
     print(f'Outliers: {outliers}')
+    
     if len(data[0]) == 2:
-        printClusters(model.clusters)
+        if len(outliers) > 0:
+            clusters.append(data[(outliers)])
+        printClusters(clusters)
     
 
 if __name__ == "__main__":
