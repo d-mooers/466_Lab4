@@ -12,6 +12,7 @@ import numpy as np
 from pathlib import Path
 from KMeansModel import KMeans
 from matplotlib import pyplot as plt
+import json
 
 def printClusters(clusters):
     colors = ['red', 'blue', 'green', 'yellow', 'orange', 'teal', 'brown', 'black']
@@ -20,6 +21,25 @@ def printClusters(clusters):
         for [x, y] in cluster:
             plt.plot(x, y, colors[i % len(colors)], marker='o')
     plt.show()
+    
+def genClusterData(cluster, centroid):
+    distances = np.sqrt(np.sum((np.array(cluster) - np.array(centroid)) ** 2, axis=0))
+    cluster = np.array(cluster).tolist()
+    return (f'\tCenter: {", ".join([str(x) for x in centroid.tolist()])}\n' +
+    f'\tMax Dist. to Center: {str(distances.max())}\n' +
+    f'\tMin Dist. to Center: {str(distances.min())}\n' +
+    f'\tAvg Dist. to Center: {str(distances.mean())}\n' + 
+    f'\t{str(len(cluster))} Points:\n\t\t' +
+    "\n\t\t".join([", ".join([str(x) for x in point]) for point in cluster]))
+    # return {
+    #     "Number of Points in Cluster": len(cluster),
+    #     "Centroid Coordinates": centroid.tolist(),
+    #     "Maximum Distance": distances.max(),
+    #     "Minimum Distance": distances.min(),
+    #     "Average Distance": distances.mean(),
+    #     "SSE": np.sum(distances),
+    #     "Points in Cluster": ", ".join([f'[{",".join(str(point))}]' for point in cluster])
+    # }
 
 
 #java kmeans <Filename> <k>
@@ -66,8 +86,9 @@ def main():
     data = np.array(tmp)
     model = KMeans(data, k, threshold)
     model.run()
-    print(model.clusters)
-    printClusters(model.clusters)
+    print("\n\n".join([f'Cluster {i}:\n {genClusterData(model.clusters[i], model.centroids[i])}' for i in range(len(model.clusters))]))
+    if len(data[0]) == 2:
+        printClusters(model.clusters)
     
 
 if __name__ == "__main__":

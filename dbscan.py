@@ -13,7 +13,7 @@ def parse():
     )
 
     parser.add_argument(
-        "--epsilon",
+        "--e",
         type=float,
         nargs="?",
         default=0.1,
@@ -21,7 +21,7 @@ def parse():
     )
 
     parser.add_argument(
-        "--NumPoints",
+        "--n",
         type=int,
         nargs="?",
         default=5,
@@ -32,12 +32,26 @@ def parse():
     args = vars(parser.parse_args())
     return args
 
+def genClusterData(cluster):
+    if(len(cluster) == 0):
+        return ""
+    centroid = np.mean(cluster, axis=0)
+    print(centroid)
+    print(cluster)
+    distances = np.sqrt(np.sum((np.array(cluster) - np.array(centroid)) ** 2, axis=0))
+    cluster = np.array(cluster).tolist()
+    return (f'\tCenter: {", ".join([str(x) for x in centroid.tolist()])}\n' +
+    f'\tMax Dist. to Center: {str(distances.max())}\n' +
+    f'\tMin Dist. to Center: {str(distances.min())}\n' +
+    f'\tAvg Dist. to Center: {str(distances.mean())}\n' + 
+    f'\t{str(len(cluster))} Points:\n\t\t' +
+    "\n\t\t".join([", ".join([str(x) for x in point]) for point in cluster]))
 
 def main():
     args = parse()
     training_fname = args["trainingSetFile"]
-    radius = args["epsilon"]
-    minPoints = args["NumPoints"]
+    radius = args["e"]
+    minPoints = args["n"]
 
 
     tmp = pd.read_csv(training_fname)
@@ -52,9 +66,12 @@ def main():
     data = np.array(tmp)
     model = DBScanModel(data, radius, minPoints)
     clusters = model.build()
-    print(model.type)
-    print(clusters)
-    # printClusters(clusters)
+    outliers = [i for i in model.type.keys() if model.type[i] == 2]
+
+    print("\n\n".join([f'Cluster {i}:\n {genClusterData(data[(model.clusters[i])])}' for i in range(len(model.clusters))]))
+    print(f'Outliers: {outliers}')
+    if len(data[0]) == 2:
+        printClusters(model.clusters)
     
 
 if __name__ == "__main__":
