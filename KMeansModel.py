@@ -14,6 +14,7 @@ class KMeans:
         self.centroids = np.array([])
         self.clusters = [[] for _ in range(k)]
         self.useSSE = useSSE
+        self.startingCentroids = set()
         
     # returns the error of centroid selection
     def findNearestCentroid(self, row):
@@ -36,22 +37,26 @@ class KMeans:
     # returns the change in centroids
     def calculateNewCentroids(self):
         oldCentroids = self.centroids
-        print([len(i) for i in self.clusters])
-        print(self.centroids)
         self.centroids = np.array(list(map(lambda cluster: np.mean(np.array(cluster), axis=0), self.clusters)))
         # print(oldCentroids, self.centroids)
         return np.sum(np.sqrt(np.sum((oldCentroids - self.centroids) ** 2, axis=0)))
     
     def getFarthestPointFromCentroids(self):
         distances = np.apply_along_axis(distanceFromAll(np.array(self.centroids)), 1, self.data)
-        print(self.data[np.argmax(distances)] == self.centroids)
-        i = np.argmax(distances)
-        while np.sum(self.data[np.argmax(distances[i] == self.centroids)
-        return self.data[np.argmax(distances)]
+        indices = np.argsort(distances)
+        i = len(indices) - 1
+        while tuple(self.data[indices[i]].tolist()) in self.startingCentroids:
+            i -= 1
+        return self.data[indices[i]]
         
     def kmeansPlus(self):
         self.centroids = [np.mean(self.data, axis=0)]
+        self.centroids.append(self.getFarthestPointFromCentroids())
+        self.centroids.pop(0)
+        self.startingCentroids.add(tuple(self.centroids[0].tolist()))
         for _ in range(self.k - 1):
+            newCentroid = self.getFarthestPointFromCentroids()
+            self.startingCentroids.add(tuple(newCentroid.tolist()))
             self.centroids.append(self.getFarthestPointFromCentroids())
     
     def run(self):

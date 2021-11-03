@@ -28,28 +28,29 @@ def printClusters(clusters):
     
 def calcInterCentroidDistance(centroids):
     return np.sum(np.apply_along_axis(distanceFromAll(centroids), 1, centroids))
+
+def outputClusterData(clusters, centroids):
+    SSE = np.sum([genClusterData(clusters[i], i, centroids[i]) for i in range(len(clusters))])
+    interCentroidDistance = calcInterCentroidDistance(centroids) / (len(centroids) ** 2)
+    print(f'SSE: {SSE}')
+    print(f'Inter Centroid Distance: {interCentroidDistance}')
+    print(f'SSE / Inter Centroid Distance: {SSE / interCentroidDistance}')
+
     
-def genClusterData(cluster, centroid):
+    
+def genClusterData(cluster, clusterNumber, centroid):
     if centroid is None:
         centroid = centroid.mean(axis=0)
     distances = np.sqrt(np.sum((np.array(cluster) - np.array(centroid)) ** 2, axis=0))
     cluster = np.array(cluster).tolist()
+    print(f'Cluster {clusterNumber}:')
     print(f'\tCenter: {", ".join([str(x) for x in centroid.tolist()])}\n' +
     f'\tMax Dist. to Center: {str(distances.max())}\n' +
     f'\tMin Dist. to Center: {str(distances.min())}\n' +
     f'\tAvg Dist. to Center: {str(distances.mean())}\n' + 
     f'\t{str(len(cluster))} Points:\n\t\t' +
     "\n\t\t".join([", ".join([str(x) for x in point]) for point in cluster]))
-    # return {
-    #     "Number of Points in Cluster": len(cluster),
-    #     "Centroid Coordinates": centroid.tolist(),
-    #     "Maximum Distance": distances.max(),
-    #     "Minimum Distance": distances.min(),
-    #     "Average Distance": distances.mean(),
-    #     "SSE": np.sum(distances),
-    #     "Points in Cluster": ", ".join([f'[{",".join(str(point))}]' for point in cluster])
-    # }
-
+    return np.sum((np.array(cluster) - np.array(centroid)) ** 2) / len(cluster)
 
 #java kmeans <Filename> <k>
 def parse():
@@ -97,13 +98,9 @@ def main():
     data = np.array(tmp)
     model = KMeans(data, k, threshold, useSSE=useSSE)
     model.run()
-    interCentroidDistance = calcInterCentroidDistance(model.centroids)
-    print("\n\n".join([f'Cluster {i}:\n {genClusterData(model.clusters[i], model.centroids[i])}' for i in range(len(model.clusters))]))
-    print(f'Total SSE: {model.SSE}')
-    print(f'Inter Centroid Distance: {interCentroidDistance}')
-    print(f'SSE / Centroid Distance: {model.SSE / interCentroidDistance}')
-    # if len(data[0]) == 2:
-    #     printClusters(model.clusters)
+    outputClusterData(model.clusters, model.centroids)
+    if len(data[0]) == 2:
+        printClusters(model.clusters)
     
 
 if __name__ == "__main__":
