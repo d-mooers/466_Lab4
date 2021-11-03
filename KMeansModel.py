@@ -57,7 +57,7 @@ class KMeans:
         for _ in range(self.k - 1):
             newCentroid = self.getFarthestPointFromCentroids()
             self.startingCentroids.add(tuple(newCentroid.tolist()))
-            self.centroids.append(self.getFarthestPointFromCentroids())
+            self.centroids.append(newCentroid)
     
     def run(self):
         self.kmeansPlus()
