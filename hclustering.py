@@ -34,9 +34,6 @@ def create_data_string(fname):
             str_data.append(json_string)
     return str_data
 
-    print("str data", str_data, type(str_data))
-
-
 def main():
     args = parse()
     training_fname = args["trainingSetFile"]
@@ -64,7 +61,8 @@ def main():
     
     A = AgloClusterModel(data,str_data, threshold) 
     A.build()
-    A.visualize()
+    A.testAllThresholds()
+    # A.visualize()
 
     
 
