@@ -101,12 +101,10 @@ def main():
         _max = data.max(axis=0)
         print(_min, _max)
         data = (data - _min) / (_max - _min)
-
     model = DBScanModel(data, radius, minPoints)
     clusters = model.build()
     outliers = [i for i in range(len(data)) if model.type.get(i) is None]
     # SSE = np.sum([calcSSE(cluster) for cluster in clusters])
-
     # print("\n\n".join([f'Cluster {i}:\n {genClusterData(data[(model.clusters[i])])}' for i in range(len(model.clusters))]))
     outputClusterData(clusters)
     print(f'Outliers: {data[(outliers)]}')
