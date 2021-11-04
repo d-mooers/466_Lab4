@@ -59,14 +59,8 @@ class AgloClusterModel:
             left = self.measuring(threshold,tree["nodes"][0])
             right = self.measuring(threshold, tree["nodes"][1])
             # print(f'Node: {tree}\nLeft: {left}, Right: {right}')
-            if int(tree["height"]) > threshold: #and (len(right) == 1 or len(left) == 1): 
+            if float(tree["height"]) > threshold: #and (len(right) == 1 or len(left) == 1): 
                 val = left + right
-                # if len(right) == 1 and len(left) == 1:
-                #     val = [left, right]
-                # elif len(right) == 1:
-                #     val = left + [right]
-                # else:
-                #     val = [left] + right
             else: 
                 val = [left[0] + right[0]]
         
@@ -268,8 +262,8 @@ class AgloClusterModel:
             self.nodeMapping[tuple(sorted(joined_clusters))] = tree
             self.tree.append(tree)
             # print("tree")
-            for item in self.tree: 
-                print(item)
+            # for item in self.tree: 
+            #     print(item)
 
         self.tree = self.nodeMapping[tuple(range(len(self.data)))]
         ##print("\n clusters", self.clusters)

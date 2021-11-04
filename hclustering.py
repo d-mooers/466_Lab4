@@ -18,6 +18,8 @@ def parse():
         default=3,
         help="float value reresenting threshold for stoppage condition; default is 3",
     )
+    parser.add_argument("--normalize", default=False, action="store_true", help="normalize the data")
+
 
     args = vars(parser.parse_args())
     return args
@@ -49,10 +51,17 @@ def main():
     header = list(tmp)
     skip = [i for i, j in zip(tmp.columns, header) if j == '0']
     # tmp.drop(tmp.index[[0]], inplace=True)
+    tmp.drop(columns=skip, inplace=True)
     skip2 = tmp[(tmp == '?').any(axis=1)]
     tmp.drop(skip2.index, axis=0,inplace=True)
     tmp.reset_index(drop=True, inplace=True)
     data = np.array(tmp)
+    if args['normalize']:
+        _min = data.min(axis=0)
+        _max = data.max(axis=0)
+        print(_min, _max)
+        data = (data - _min) / (_max - _min)
+
     #print("data", data)
     str_data = create_data_string(training_fname)
     str_data = str_data[1:]
@@ -61,6 +70,9 @@ def main():
     
     A = AgloClusterModel(data,str_data, threshold) 
     A.build()
+    # print(json.dumps(A.tree, indent=2))
+    # clusters = A.measuring(A.threshold, A.tree)
+    # print(clusters, len(clusters))
     A.testAllThresholds()
     # A.visualize()
 
