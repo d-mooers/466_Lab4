@@ -47,7 +47,7 @@ def calcInterCentroidDistance(centroids):
         for j in range(i + 1, len(centroids)):
             dist += distance(centroids[i], centroids[j])
             iter += 1
-    print(f'Dist: {dist}, Iter: {iter}')
+    # print(f'Dist: {dist}, Iter: {iter}')
     return dist / iter
 
 def outputClusterData(clusters, centroids=None):
@@ -132,18 +132,38 @@ def main():
         print(_min, _max)
         data = (data - _min) / (_max - _min)
         
-    model = KMeans(data, k, threshold, useSSE=useSSE)
-    model.run()
-    # if args['normalize']:
-    #     minMax = _max - _min
-    #     model.clusters = [minMax * cluster + _min for cluster in model.clusters]
-    #     model.centroids = minMax * model.centroids + _min
+    print("len data", len(data))
+    ks = [k for k in range(2,len(data))]
+    ratios = []
+    
+    for k in ks:
+        print("k", k)
+        model = KMeans(data, k, threshold, useSSE=useSSE)
+        model.run()
 
-    outputClusterData(model.clusters, model.centroids)
-    if len(data[0]) == 2:
-        printClusters(model.clusters)
-    elif len(data[0]) == 3:
-        printClusters3d(model.clusters)
+        # if args['normalize']:
+        #     minMax = _max - _min
+        #     model.clusters = [minMax * cluster + _min for cluster in model.clusters]
+        #     model.centroids = minMax * model.centroids + _min
+
+        ratios.append(outputClusterData(model.clusters, model.centroids))
+        # print("ratios", ratios)
+        # if len(data[0]) == 2:
+        #     printClusters(model.clusters)
+        # elif len(data[0]) == 3:
+        #     printClusters3d(model.clusters)
+
+    print("ks", ks)
+    print("ratios", ratios)
+    xpoints = np.array(ks)
+    ypoints = np.array(ratios)
+    plt.title("SSE for K Means: {}".format(training_fname))
+    plt.xlabel('K number of clusters')
+    plt.ylabel('Ratio of: Avg. Radius / Inner Centroid Distance')
+
+    plt.plot(xpoints, ypoints)
+    plt.show()
+    
     
 
 if __name__ == "__main__":
