@@ -53,29 +53,32 @@ def calcInterCentroidDistance(centroids):
 def outputClusterData(clusters, centroids=None):
     if centroids is None:
         centroids = [np.mean(cluster, axis=0) for cluster in clusters]
-
-    avgRadius = np.sum([genClusterData(clusters[i], i, centroids[i]) for i in range(len(clusters))]) / len(clusters)
+        
+    total = 0
+    for cluster in clusters: total += len(cluster)
+    
+    avgRadius = np.sum([genClusterData(clusters[i], i, centroids[i]) for i in range(len(clusters))])
     interCentroidDistance = calcInterCentroidDistance(centroids)
-    # print(f'Average Cluster Radius: {avgRadius}')
-    # print(f'Inter Centroid Distance: {interCentroidDistance}')
-    # print(f'Average Radius / Inter Centroid Distance: {avgRadius / interCentroidDistance}')
-    return avgRadius/ interCentroidDistance
+    print(f'Average Cluster Radius: {avgRadius}')
+    print(f'Inter Centroid Distance: {interCentroidDistance}')
+    print(f'Average Radius / Inter Centroid Distance: {avgRadius / interCentroidDistance}')
+    return avgRadius / interCentroidDistance
 
     
     
 def genClusterData(cluster, clusterNumber, centroid):
     if centroid is None:
         centroid = cluster.mean(axis=0)
-    distances = np.sqrt(np.sum((np.array(cluster) - np.array(centroid)) ** 2, axis=0))
+    distances = np.sqrt(np.sum((np.array(cluster) - np.array(centroid)) ** 2, axis=1))
     cluster = np.array(cluster).tolist()
-    # print(f'Cluster {clusterNumber}:')
-    # print(f'\tCenter: {", ".join([str(x) for x in centroid.tolist()])}\n' +
-    # f'\tMax Dist. to Center: {str(distances.max())}\n' +
-    # f'\tMin Dist. to Center: {str(distances.min())}\n' +
-    # f'\tAvg Dist. to Center: {str(distances.mean())}\n' + 
-    # f'\t{str(len(cluster))} Points:\n\t\t' +
-    # "\n\t\t".join([", ".join([str(x) for x in point]) for point in cluster]))
-    return distances.max()
+    print(f'Cluster {clusterNumber}:')
+    print(f'\tCenter: {", ".join([str(x) for x in centroid.tolist()])}\n' +
+    f'\tMax Dist. to Center: {str(distances.max())}\n' +
+    f'\tMin Dist. to Center: {str(distances.min())}\n' +
+    f'\tAvg Dist. to Center: {str(distances.mean())}\n' + 
+    f'\t{str(len(cluster))} Points:\n\t\t' +
+    "\n\t\t".join([", ".join([str(x) for x in point]) for point in cluster]))
+    return distances.mean()
 
 #java kmeans <Filename> <k>
 def parse():

@@ -6,6 +6,7 @@ import json
 import matplotlib.pyplot as plt 
 import matplotlib
 from collections.abc import Iterable
+from kmeans import outputClusterData
 
 distance = lambda x,y: np.sqrt(np.sum((x - y) ** 2))
 distanceFrom = lambda origin: lambda destinaton: distance(origin, destinaton)
@@ -34,6 +35,7 @@ class AgloClusterModel:
         self.clusters = []
         self.final_clusters = []
         self.nodeMapping = {}
+        self.possibleThresholds = set()
         
     def findClosestPair(self):
         # returns index of 2-d array where the min value is 
@@ -56,19 +58,13 @@ class AgloClusterModel:
         else: 
             left = self.measuring(threshold,tree["nodes"][0])
             right = self.measuring(threshold, tree["nodes"][1])
-            print(f'Node: {tree}\nLeft: {left}, Right: {right}')
-            if int(tree["height"]) > threshold: #and (len(right) == 1 or len(left) == 1): 
+            # print(f'Node: {tree}\nLeft: {left}, Right: {right}')
+            if float(tree["height"]) > threshold: #and (len(right) == 1 or len(left) == 1): 
                 val = left + right
-                # if len(right) == 1 and len(left) == 1:
-                #     val = [left, right]
-                # elif len(right) == 1:
-                #     val = left + [right]
-                # else:
-                #     val = [left] + right
             else: 
                 val = [left[0] + right[0]]
         
-        print(f'Interim Clusters: {val}, threshold: {threshold}, height: {tree["height"]}')
+        # print(f'Interim Clusters: {val}, threshold: {threshold}, height: {tree["height"]}')
         return val
         # if height is > threshold
         #   return [dfs(left), dfs(right)]
@@ -110,17 +106,11 @@ class AgloClusterModel:
 
     def distance_between_clusters(self, c1, c2): 
         min_ = distance(self.data[c1[0]], self.data[c2[0]])
-        flag = False
         for i in c1:
             for j in c2: 
                 d = distance(self.data[i], self.data[j])
                 if d < min_: 
                     min_ = d 
-                if (i == 11 and (j == 10 or j == 13)) or (j == 11 and (i == 10 or i == 13)):
-                    flag = True
-                    print(f'Distance: {d}, i: {self.data[i]}, j: {self.data[j]}')
-        if flag:
-            print(f'Min Distance: {min_}')
 
         return min_
 
@@ -209,9 +199,9 @@ class AgloClusterModel:
             #print("str data", self.str_data)
             #print("item in go through trees", self.str_data[c[0]], type(self.str_data[c[0]]))
             arr = np.array(c)
-            print(f'flattened : {arr.flatten()}')
+            # print(f'flattened : {arr.flatten()}')
             val = self.nodeMapping[tuple(sorted(arr.tolist()))]
-            print(f'Mapped Node: {val}')
+            # print(f'Mapped Node: {val}')
             return val
                 
 
@@ -225,7 +215,7 @@ class AgloClusterModel:
         # #print("initial clusters", self.clusters)
         while len(self.clusters) > 1: 
             # #print("\nTREE", self.tree)
-            print("\nwhile clusters", self.clusters)
+            # print("\nwhile clusters", self.clusters)
             
             # all the unique combinations of clusters [([1], [2, 3, 4]), ([1], [5]), ([2, 3, 4], [5])]
             cluster_combinations = [comb for comb in combinations(self.clusters, 2)]
@@ -236,27 +226,28 @@ class AgloClusterModel:
             for combo in cluster_combinations: 
                 cluster_distances.append(self.distance_between_clusters(combo[0], combo[1])) #[1], [2,3,4]
 
-            print("cluster distances ", cluster_distances)
+            # print("cluster distances ", cluster_distances)
             
             min_distance = min(cluster_distances)
-            print("min distance ", min_distance)
+            # print("min distance ", min_distance)
             clusters = cluster_combinations[cluster_distances.index(min(cluster_distances))] # ([1], [2, 3, 4])
-            print("clusters of interest", clusters)
+            # print("clusters of interest", clusters)
             
             c1 = clusters[0] #[1], pass in the actual data point 
             c2 = clusters[1] #[2, 3, 4]
-            print("c1", c1, c1[0], self.data[c1[0]])
-            print("c2", c2, c2[0], self.data[c2[0]])
+            # print("c1", c1, c1[0], self.data[c1[0]])
+            # print("c2", c2, c2[0], self.data[c2[0]])
             node1 = self.create_tree_node(c1)
             # print("\nnode1", node1)
             #print("4")
             node2 = self.create_tree_node(c2)
-            print(f'Node 1: {node1}, Node 2: {node2}')
+            # print(f'Node 1: {node1}, Node 2: {node2}')
             # print("\nnode2", node2)
             #node_list = [node1, node2]
             #json_string = json.dumps(node_list)
             #tree = {"type": "node", "height": "{}".format(min_distance), "nodes": json_string}
             tree = {"type": "node", "height": min_distance, "nodes": [node1, node2]}
+            self.possibleThresholds.add(min_distance)
             #print("while tree", tree)
             ##print("\ntree 2", tree)
             #json_object2 = json.dumps(tree, indent = 4) 
@@ -270,9 +261,9 @@ class AgloClusterModel:
             self.clusters.append(joined_clusters) # adds [1,2]
             self.nodeMapping[tuple(sorted(joined_clusters))] = tree
             self.tree.append(tree)
-            print("tree")
-            for item in self.tree: 
-                print(item)
+            # print("tree")
+            # for item in self.tree: 
+            #     print(item)
 
         self.tree = self.nodeMapping[tuple(range(len(self.data)))]
         ##print("\n clusters", self.clusters)
@@ -282,12 +273,30 @@ class AgloClusterModel:
         # #print("len", len(tree["nodes"]))
         
         json_object = json.dumps(self.tree, indent = 4) 
-        print(json_object)
+        # print(json_object)
         cluster = []
-        final_clusters = self.measuring(self.threshold, self.tree)
-        print("measuring", final_clusters, len(final_clusters)) 
-        self.final_clusters = final_clusters
+        # final_clusters = self.measuring(self.threshold, self.tree)
+        # print("measuring", final_clusters, len(final_clusters)) 
+        # self.final_clusters = final_clusters
         
+    def testAllThresholds(self):
+        thresholds = sorted(list(self.possibleThresholds))[1:-1]
+        metrics = []
+        numberClusters = []
+        for t in thresholds:
+            print(f'Threshold: {t} {"v" * 20}')
+            clusters = self.measuring(t, self.tree)
+            metrics.append(outputClusterData(clusters))
+            numberClusters.append(len(clusters))
+            print(f'\nThreshold: {t} {"^" * 20}')
+            print("-" * 30)
+        asDf = pd.DataFrame({"thresholds": thresholds, "Metric": metrics, "# of Clusters": numberClusters})
+        print(asDf)
+        plt.plot(thresholds, metrics)
+        plt.title("Threshold vs Avg Cluster Radius / Avg InterCentroid Distance")
+        plt.xlabel('Threshold')
+        plt.ylabel('Average Centroid Radius / Average Inter Cluster Distance')
+        plt.show() 
 
 
     def visualize(self): 
