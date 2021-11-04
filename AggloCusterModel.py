@@ -33,6 +33,7 @@ class AgloClusterModel:
         self.tree = []
         self.clusters = []
         self.final_clusters = []
+        self.nodeMapping = {}
         
     def findClosestPair(self):
         # returns index of 2-d array where the min value is 
@@ -50,13 +51,23 @@ class AgloClusterModel:
         #print("TREE",tree)
         val = []
         if tree["type"] == "leaf": 
-            return [tree["data"]]
-        else: 
-            if int(tree["height"]) > threshold: 
-                val = [self.measuring(threshold,tree["nodes"][0]), self.measuring(threshold, tree["nodes"][1])]
+            return [[tree["data"]]]
 
+        else: 
+            left = self.measuring(threshold,tree["nodes"][0])
+            right = self.measuring(threshold, tree["nodes"][1])
+            print(f'Node: {tree}\nLeft: {left}, Right: {right}')
+            if int(tree["height"]) > threshold: #and (len(right) == 1 or len(left) == 1): 
+                val = left + right
+                # if len(right) == 1 and len(left) == 1:
+                #     val = [left, right]
+                # elif len(right) == 1:
+                #     val = left + [right]
+                # else:
+                #     val = [left] + right
             else: 
-                val = self.measuring(threshold,tree["nodes"][0]) + self.measuring(threshold, tree["nodes"][1]) 
+                val = [left[0] + right[0]]
+        
         print(f'Interim Clusters: {val}, threshold: {threshold}, height: {tree["height"]}')
         return val
         # if height is > threshold
@@ -99,11 +110,17 @@ class AgloClusterModel:
 
     def distance_between_clusters(self, c1, c2): 
         min_ = distance(self.data[c1[0]], self.data[c2[0]])
-        for i in c1: 
+        flag = False
+        for i in c1:
             for j in c2: 
                 d = distance(self.data[i], self.data[j])
                 if d < min_: 
                     min_ = d 
+                if (i == 11 and (j == 10 or j == 13)) or (j == 11 and (i == 10 or i == 13)):
+                    flag = True
+                    print(f'Distance: {d}, i: {self.data[i]}, j: {self.data[j]}')
+        if flag:
+            print(f'Min Distance: {min_}')
 
         return min_
 
@@ -181,7 +198,7 @@ class AgloClusterModel:
             list_ = self.data[c[0]].tolist()
             #print("list_", list_)
             json_string = json.dumps(list_)
-            return { "type":"leaf", "height": "0", "data": json_string}
+            return { "type":"leaf", "height": "0", "data": list_}
             
             # before 
             #return { "type":"leaf", "height": "0", "data": self.data[c[0]]}
@@ -191,7 +208,11 @@ class AgloClusterModel:
             #print("c", c, type(c), c[0])
             #print("str data", self.str_data)
             #print("item in go through trees", self.str_data[c[0]], type(self.str_data[c[0]]))
-            return self.go_through_trees(self.str_data[c[0]])
+            arr = np.array(c)
+            print(f'flattened : {arr.flatten()}')
+            val = self.nodeMapping[tuple(sorted(arr.tolist()))]
+            print(f'Mapped Node: {val}')
+            return val
                 
 
     def build(self): 
@@ -230,6 +251,7 @@ class AgloClusterModel:
             # print("\nnode1", node1)
             #print("4")
             node2 = self.create_tree_node(c2)
+            print(f'Node 1: {node1}, Node 2: {node2}')
             # print("\nnode2", node2)
             #node_list = [node1, node2]
             #json_string = json.dumps(node_list)
@@ -246,12 +268,13 @@ class AgloClusterModel:
             self.clusters.remove(c1) # removes [1]
             self.clusters.remove(c2) # removes [2]
             self.clusters.append(joined_clusters) # adds [1,2]
+            self.nodeMapping[tuple(sorted(joined_clusters))] = tree
             self.tree.append(tree)
             print("tree")
             for item in self.tree: 
                 print(item)
 
-        self.tree = self.tree[0]
+        self.tree = self.nodeMapping[tuple(range(len(self.data)))]
         ##print("\n clusters", self.clusters)
         self.tree['type'] = "root"
         #print("\nend clusters", self.clusters)
@@ -260,9 +283,9 @@ class AgloClusterModel:
         
         json_object = json.dumps(self.tree, indent = 4) 
         print(json_object)
-
+        cluster = []
         final_clusters = self.measuring(self.threshold, self.tree)
-        print("measuring", final_clusters) 
+        print("measuring", final_clusters, len(final_clusters)) 
         self.final_clusters = final_clusters
         
 
@@ -275,10 +298,8 @@ class AgloClusterModel:
         y = []
         c = []
         for cluster in self.final_clusters: 
-            cluster = list(flatten(cluster))            
-        
-            for list_ in cluster:        
-                l = list_[1:-1].split(",")
+            print(cluster)
+            for l in cluster:        
                 x.append(int(l[0]))
                 y.append(int(l[1]))
                 c.append(colors[i])

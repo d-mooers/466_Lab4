@@ -1,0 +1,65 @@
+Cluster 0:
+	Center: 41.125, 41.375
+	Max Dist. to Center: 6.991065727054782
+	Min Dist. to Center: 5.086747487343951
+	Avg Dist. to Center: 6.038906607199366
+	8 Points:
+		39, 44
+		42, 43
+		44, 43
+		41, 41
+		38, 42
+		38, 39
+		42, 39
+		45, 40
+Cluster 1:
+	Center: 9.9, 37.8
+	Max Dist. to Center: 8.461678320522472
+	Min Dist. to Center: 7.543208866258444
+	Avg Dist. to Center: 8.002443593390458
+	10 Points:
+		10, 42
+		8, 41
+		7, 39
+		9, 38
+		12, 38
+		13, 40
+		13, 35
+		12, 34
+		9, 34
+		6, 37
+Cluster 2:
+	Center: 36.6, 22.2
+	Max Dist. to Center: 4.147288270665544
+	Min Dist. to Center: 3.286335345030997
+	Avg Dist. to Center: 3.7168118078482704
+	5 Points:
+		39, 24
+		37, 23
+		34, 23
+		35, 20
+		38, 21
+Cluster 3:
+	Center: 35.857142857142854, 10.857142857142858
+	Max Dist. to Center: 11.612800818800899
+	Min Dist. to Center: 4.105745103771404
+	Avg Dist. to Center: 7.859272961286152
+	7 Points:
+		31, 13
+		29, 11
+		34, 11
+		37, 10
+		38, 13
+		40, 9
+		42, 9
+SSE: 49.46721938775511
+Inter Centroid Distance: 20.2253420512693
+SSE / Inter Centroid Distance: 2.445803846598018
+Outliers: [[19 38]
+ [25 38]
+ [32 27]
+ [26 25]
+ [22 22]
+ [31 18]
+ [26 16]
+ [26 16]]
