@@ -5,6 +5,7 @@ from pathlib import Path
 from AggloCusterModel import AgloClusterModel
 from csv import reader
 import json 
+from kmeans import outputClusterData, pairWithData
 
 def parse():
     parser = argparse.ArgumentParser(description="HB Clustering")
@@ -50,7 +51,10 @@ def main():
 
     header = list(tmp)
     skip = [i for i, j in zip(tmp.columns, header) if j == '0']
+    include = [i for i, j in zip(tmp.columns, header) if j != '0']
+
     # tmp.drop(tmp.index[[0]], inplace=True)
+    full = tmp.copy()
     tmp.drop(columns=skip, inplace=True)
     skip2 = tmp[(tmp == '?').any(axis=1)]
     tmp.drop(skip2.index, axis=0,inplace=True)
@@ -68,12 +72,16 @@ def main():
     #print('STR DATA', str_data)
 
     
-    A = AgloClusterModel(data,str_data, threshold) 
+    A = AgloClusterModel(data,str_data, threshold, full, include) 
     A.build()
     # print(json.dumps(A.tree, indent=2))
-    # clusters = A.measuring(A.threshold, A.tree)
+    clusters = A.measuring(A.threshold, A.tree)
+    outputClusterData(clusters)
+    # accuracy = np.sum([pairWithData(cluster, full, include) for cluster in clusters])
+    # print(f'Accuracy: {accuracy}')
+
     # print(clusters, len(clusters))
-    A.testAllThresholds()
+    # A.testAllThresholds()
     # A.visualize()
 
     

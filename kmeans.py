@@ -14,6 +14,7 @@ from pathlib import Path
 from KMeansModel import KMeans
 from matplotlib import pyplot as plt
 import json
+import math
 
 distance = lambda x,y: np.sqrt(np.sum((x - y) ** 2))
 distanceFrom = lambda origin: lambda destinaton: distance(origin, destinaton)
@@ -21,6 +22,15 @@ distanceFromAll = lambda originPoints: lambda destination:  np.sum(np.apply_alon
 
 colors = ['red', 'blue', 'green', 'yellow', 'orange', 'teal', 'brown', 'black']
 
+def pairWithData(cluster, data, cols):
+    if len(cluster) == 1:
+        return 0
+    df = pd.DataFrame(data=cluster, columns=cols)
+    merged = df.merge(data, how='left', on=cols)
+    values = merged['0'].value_counts()
+    # print((values[0] / values.sum()) * (len(cluster) / len(data)))    
+    return (values[0] / values.sum()) * (len(cluster) / len(data))
+    
 def printClusters(clusters):
     for i in range(len(clusters)):
         cluster = clusters[i]
@@ -69,6 +79,7 @@ def outputClusterData(clusters, centroids=None):
 def genClusterData(cluster, clusterNumber, centroid):
     if centroid is None:
         centroid = cluster.mean(axis=0)
+    sse = np.sum((np.array(cluster) - np.array(centroid)) ** 2)
     distances = np.sqrt(np.sum((np.array(cluster) - np.array(centroid)) ** 2, axis=1))
     cluster = np.array(cluster).tolist()
     print(f'Cluster {clusterNumber}:')
@@ -76,6 +87,7 @@ def genClusterData(cluster, clusterNumber, centroid):
     f'\tMax Dist. to Center: {str(distances.max())}\n' +
     f'\tMin Dist. to Center: {str(distances.min())}\n' +
     f'\tAvg Dist. to Center: {str(distances.mean())}\n' + 
+    f'\tSSE: {str(sse)}\n'+
     f'\t{str(len(cluster))} Points:\n\t\t' +
     "\n\t\t".join([", ".join([str(x) for x in point]) for point in cluster]))
     return distances.mean()
@@ -118,8 +130,9 @@ def main():
 
     header = list(tmp)
     skip = [i for i, j in zip(tmp.columns, header) if j == '0']
-    tmp.drop(tmp.index[[0]], inplace=True)
-    tmp.drop(columns=skip, inplace=True)
+    include = [i for i, j in zip(tmp.columns, header) if j != '0']
+    full = tmp.drop(tmp.index[[0]])
+    tmp = full.drop(columns=skip)
     skip2 = tmp[(tmp == '?').any(axis=1)]
     tmp.drop(skip2.index, axis=0,inplace=True)
     tmp.reset_index(drop=True, inplace=True)
@@ -132,9 +145,9 @@ def main():
         print(_min, _max)
         data = (data - _min) / (_max - _min)
         
-    print("len data", len(data))
-    ks = [k for k in range(2,len(data))]
+    ks = [k for k in range(2, 6)]
     ratios = []
+    accuracies = []
     
     for k in ks:
         print("k", k)
@@ -152,17 +165,31 @@ def main():
         #     printClusters(model.clusters)
         # elif len(data[0]) == 3:
         #     printClusters3d(model.clusters)
+        accuracies.append(np.sum([pairWithData(cluster, full, include) for cluster in model.clusters]))
 
-    print("ks", ks)
-    print("ratios", ratios)
+    # print("ks", ks)
+    # print("ratios", ratios)
+    # xpoints = np.array(ks)
+    # ypoints = np.array(ratios)
+    
+    # plt.title("SSE for K Means: {}".format(training_fname))
+    # plt.xlabel('K number of clusters')
+    # plt.ylabel('Ratio of: Avg. Radius / Inner Centroid Distance')
+
+    # plt.plot(xpoints, ypoints)
+    # plt.show()
+        print("ks", ks)
+    print("Accuracies", accuracies)
     xpoints = np.array(ks)
-    ypoints = np.array(ratios)
-    plt.title("SSE for K Means: {}".format(training_fname))
+    ypoints = np.array(accuracies)
+    
+    plt.title("Accuracy for K Means: {}".format(training_fname))
     plt.xlabel('K number of clusters')
-    plt.ylabel('Ratio of: Avg. Radius / Inner Centroid Distance')
+    plt.ylabel('Accuracy')
 
     plt.plot(xpoints, ypoints)
     plt.show()
+
     
     
 

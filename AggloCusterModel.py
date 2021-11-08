@@ -6,7 +6,7 @@ import json
 import matplotlib.pyplot as plt 
 import matplotlib
 from collections.abc import Iterable
-from kmeans import outputClusterData
+from kmeans import outputClusterData, pairWithData
 
 distance = lambda x,y: np.sqrt(np.sum((x - y) ** 2))
 distanceFrom = lambda origin: lambda destinaton: distance(origin, destinaton)
@@ -23,7 +23,7 @@ def flatten(lis):
              yield item
 
 class AgloClusterModel:
-    def __init__(self, data, str_data, threshold, link='single'):
+    def __init__(self, data, str_data, threshold, base, include, link='single'):
         self.data = data 
         self.str_data = str_data # [ "[6, 0]", "[3, 0]", "[1, 0]" ] #data 
         #print("str data", self.str_data)
@@ -36,6 +36,8 @@ class AgloClusterModel:
         self.final_clusters = []
         self.nodeMapping = {}
         self.possibleThresholds = set()
+        self.base = base
+        self.include = include
         
     def findClosestPair(self):
         # returns index of 2-d array where the min value is 
@@ -283,11 +285,13 @@ class AgloClusterModel:
         thresholds = sorted(list(self.possibleThresholds))[1:-1]
         metrics = []
         numberClusters = []
+        # accuracies = []
         for t in thresholds:
             print(f'Threshold: {t} {"v" * 20}')
             clusters = self.measuring(t, self.tree)
             metrics.append(outputClusterData(clusters))
             numberClusters.append(len(clusters))
+            # accuracies.append(np.sum([pairWithData(cluster, self.base, self.include) for cluster in clusters]))
             print(f'\nThreshold: {t} {"^" * 20}')
             print("-" * 30)
         asDf = pd.DataFrame({"thresholds": thresholds, "Metric": metrics, "# of Clusters": numberClusters})

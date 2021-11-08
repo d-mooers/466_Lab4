@@ -37,8 +37,13 @@ class KMeans:
     # returns the change in centroids
     def calculateNewCentroids(self):
         oldCentroids = self.centroids
-        self.centroids = np.array(list(map(lambda cluster: np.mean(np.array(cluster), axis=0), self.clusters)))
-        # print(oldCentroids, self.centroids)
+        self.centroids = [np.mean(cluster, axis=0) for cluster in self.clusters]
+        # self.centroids = np.array(list(map(lambda cluster: np.mean(np.array(cluster), axis=0), self.clusters)))
+        # [print(i, len(cluster), cluster, oldCentroids[i]) for cluster, i in zip(self.clusters, range(len(self.clusters)))]
+        # print(oldCentroids, self.centroids, self.clusters)
+        if len(self.clusters) == 7:
+            print(self.clusters[2])
+        self.centroids = np.array(self.centroids)
         return np.sum(np.sqrt(np.sum((oldCentroids - self.centroids) ** 2, axis=0)))
     
     def getFarthestPointFromCentroids(self):
