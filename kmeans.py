@@ -19,21 +19,23 @@ distance = lambda x,y: np.sqrt(np.sum((x - y) ** 2))
 distanceFrom = lambda origin: lambda destinaton: distance(origin, destinaton)
 distanceFromAll = lambda originPoints: lambda destination:  np.sum(np.apply_along_axis(distanceFrom(destination), 1, originPoints))
 
-colors = ['red', 'blue', 'green', 'yellow', 'orange', 'teal', 'brown', 'black']
-
-def printClusters(clusters):
+#colors = ["red", "yellow", "purple", "blue", "green", "pink", "brown", "black", "orange", "lightblue", "teal", "lightpurple", "tan", "lightgrey"]
+colors = ["red", "yellow", "purple", "blue", "green", "pink", "brown", "black", "orange", "salmon", "teal", "violet", "lawngreen", "indigo"]
+def printClusters(clusters, filename, k, centroid):
     for i in range(len(clusters)):
         cluster = clusters[i]
         for [x, y] in cluster:
+            plt.title("K Means: {} k = {}, Centroid= {}".format(filename, k, centroid))
             plt.plot(x, y, colors[i % len(colors)], marker='o')
     plt.show()
     
-def printClusters3d(clusters):
+def printClusters3d(clusters, filename, k, centroid):
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
     for i in range(len(clusters)):
         cluster = clusters[i]
         for [x, y, z] in cluster:
+            plt.title("K Means: {} k = {}, Centroid= {}".format(filename, k, centroid))
             plt.plot(x, y,z, colors[i % len(colors)], marker='o')
     # plt.xlim([-0.01, 1.1])
     # plt.ylim([-0.01, 1.1])
@@ -50,7 +52,7 @@ def calcInterCentroidDistance(centroids):
     # print(f'Dist: {dist}, Iter: {iter}')
     return dist / iter
 
-def outputClusterData(clusters, centroids=None):
+def outputClusterData(clusters, centroids=None, distance_metric=None, t=0, ):
     if centroids is None:
         centroids = [np.mean(cluster, axis=0) for cluster in clusters]
         
@@ -131,9 +133,20 @@ def main():
         _max = data.max(axis=0)
         print(_min, _max)
         data = (data - _min) / (_max - _min)
-        
+
+
+    model = KMeans(data, k, threshold, useSSE=useSSE)
+    model.run()
+    if len(data[0]) == 2:
+        print("here")
+        printClusters(model.clusters, training_fname, k, args['change'])
+    elif len(data[0]) == 3:
+        printClusters3d(model.clusters, training_fname, k, args['change'])
+    outputClusterData(model.clusters, model.centroids)
+    exit()
+    
     print("len data", len(data))
-    ks = [k for k in range(2,len(data))]
+    ks = [k for k in range(2,4)]
     ratios = []
     
     for k in ks:
@@ -148,10 +161,13 @@ def main():
 
         ratios.append(outputClusterData(model.clusters, model.centroids))
         # print("ratios", ratios)
-        # if len(data[0]) == 2:
-        #     printClusters(model.clusters)
-        # elif len(data[0]) == 3:
-        #     printClusters3d(model.clusters)
+        # if k == 5: 
+        #     exit()
+        if len(data[0]) == 2:
+            print("here")
+            printClusters(model.clusters, training_fname, k, args['change'])
+        elif len(data[0]) == 3:
+            printClusters3d(model.clusters, training_fname, k, args['change'])
 
     print("ks", ks)
     print("ratios", ratios)

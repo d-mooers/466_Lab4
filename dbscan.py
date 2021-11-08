@@ -8,18 +8,19 @@ from kmeans import outputClusterData
 
 calcSSE = lambda cluster: np.sum((np.array(cluster) - np.mean(cluster, axis=0)) ** 2)
 
-colors = ['red', 'blue', 'green', 'yellow', 'orange', 'teal', 'brown']
+colors = ["red", "yellow", "purple", "blue", "green", "pink", "brown", "black", "orange", "salmon", "teal", "violet", "lawngreen", "indigo"]
 
-def printClusters(clusters, outliers):
+def printClusters(clusters, outliers , fname, radius, minpoints):
     for i in range(len(clusters)):
         cluster = clusters[i]
         for [x, y] in cluster:
+            plt.title("DB Scan: {} radius = {} min. points = {}".format(fname,radius, minpoints))
             plt.plot(x, y, colors[i % len(colors)], marker='o')
     for [x, y] in outliers:
         plt.plot(x, y, "black", marker="x")
     plt.show()
     
-def printClusters3d(clusters, outliers):
+def printClusters3d(clusters, outliers, fname, radius, minpoints):
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
     for i in range(len(clusters)):
@@ -29,6 +30,7 @@ def printClusters3d(clusters, outliers):
         # z = [c[2] for c in cluster]
         # print(list(zip(x, y, z)))
         for [x, y, z] in cluster:
+            plt.title("DBScan: {} radius = {} min. points = {}".format(fname,radius, minpoints))
             plt.plot(x, y,z, colors[i % len(colors)], marker='o')
     for [x, y, z] in outliers:
         plt.plot(x, y, z, "black", marker='x')
@@ -57,7 +59,7 @@ def parse():
         type=int,
         nargs="?",
         default=5,
-        help="integer value reresenting number representing number of points; default is __"
+        help="integer value reresenting number representing number of points; default is 5"
     )
     parser.add_argument("--normalize", default=False, action="store_true", help="normalize the data")
 
@@ -76,6 +78,28 @@ def parse():
 #     f'\tAvg Dist. to Center: {str(distances.mean())}\n' + 
 #     f'\t{str(len(cluster))} Points:\n\t\t' +
 #     "\n\t\t".join([", ".join([str(x) for x in point]) for point in cluster]))
+
+# def testAllThresholds(self, fname):
+#     epsilon = 10 
+#     n = [n for n in range(2, 8)]
+#     pass 
+
+
+    # numberClusters = []
+    # for t in thresholds:
+    #     print(f'Threshold: {t} {"v" * 20}')
+    #     clusters = self.measuring(t, self.tree)
+    #     metrics.append(outputClusterData(clusters))
+    #     numberClusters.append(len(clusters))
+    #     print(f'\nThreshold: {t} {"^" * 20}')
+    #     print("-" * 30)
+    # asDf = pd.DataFrame({"thresholds": thresholds, "Metric": metrics, "# of Clusters": numberClusters})
+    # print(asDf)
+    # plt.plot(thresholds, metrics)
+    # plt.title("Agglomerative for: {} at Various Thresholds".format(fname))
+    # plt.xlabel('Threshold')
+    # plt.ylabel('Average Centroid Radius / Average Inter Cluster Distance')
+    # plt.show() 
 
 def main():
     args = parse()
@@ -102,22 +126,64 @@ def main():
         print(_min, _max)
         data = (data - _min) / (_max - _min)
 
+
     model = DBScanModel(data, radius, minPoints)
     clusters = model.build()
     outliers = [i for i in range(len(data)) if model.type.get(i) is None]
-    # SSE = np.sum([calcSSE(cluster) for cluster in clusters])
+    SSE = np.sum([calcSSE(cluster) for cluster in clusters])
 
-    # print("\n\n".join([f'Cluster {i}:\n {genClusterData(data[(model.clusters[i])])}' for i in range(len(model.clusters))]))
+    if len(data[0]) == 2:
+
+        printClusters(clusters, data[(outliers)], training_fname, radius, minPoints)
+    elif len(data[0]) == 3:
+        printClusters3d(clusters, data[(outliers)], training_fname, radius, minPoints)
+
+    #print("\n\n".join([f'Cluster {i}:\n {genClusterData(data[(model.clusters[i])])}' for i in range(len(model.clusters))]))
+
     outputClusterData(clusters)
     print(f'Outliers: {data[(outliers)]}')
-    # print(f'Total SSE: {SSE}')
+    print(f'Total SSE: {SSE}')
+    exit()
     
-    if len(data[0]) == 2:
-        printClusters(clusters, data[(outliers)])
-    elif len(data[0]) == 3:
-        printClusters3d(clusters, data[(outliers)])
 
+    e = 0.5
+    ns = [n for n in range(1, 7)]
+    i = 0 
+    ratios = []
+    for i in range(len(ns)): 
+        print("n", ns[i])
+        print("e", e)
+
+        model = DBScanModel(data, e, ns[i])
+        clusters = model.build()
+        # outliers = [i for i in range(len(data)) if model.type.get(i) is None]
+        # SSE = np.sum([calcSSE(cluster) for cluster in clusters])
+
+        #print("\n\n".join([f'Cluster {i}:\n {genClusterData(data[(model.clusters[i])])}' for i in range(len(model.clusters))]))
+
+        #outputClusterData(clusters)
+        print(f'Outliers: {data[(outliers)]}')
+        print(f'Total SSE: {SSE}')
+        
+
+
+        ratios.append(outputClusterData(clusters))
     
+        i+=1 
+
+
+    print("ns", ns)
+    print("ratios", ratios)
+    xpoints = np.array(ns)
+    ypoints = np.array(ratios)
+    plt.title("DB Scan for: {}".format(training_fname))
+    plt.xlabel('n number of min. Points, epsilon ={}'.format(e))
+    plt.ylabel('Average Radius / Inter Centroid Distance')
+
+    plt.plot(xpoints, ypoints)
+    plt.show()
+
+
 
 if __name__ == "__main__":
     main()

@@ -104,7 +104,7 @@ class AgloClusterModel:
 
         return False 
 
-    def distance_between_clusters(self, c1, c2): 
+    def distance_between_clusters_single(self, c1, c2): 
         min_ = distance(self.data[c1[0]], self.data[c2[0]])
         for i in c1:
             for j in c2: 
@@ -114,7 +114,25 @@ class AgloClusterModel:
 
         return min_
 
+    def distance_between_clusters_average(self, c1, c2): 
+        count = 0 
+        all_distances = 0 
+        for i in c1:
+            for j in c2: 
+                all_distances += distance(self.data[i], self.data[j])
+                count += 1 
+        
+        return all_distances/count 
 
+    def distance_between_clusters_comlete(self, c1, c2): 
+        max_ = distance(self.data[c1[0]], self.data[c2[0]])
+        for i in c1:
+            for j in c2: 
+                d = distance(self.data[i], self.data[j])
+                if d > max_: 
+                    max_ = d 
+
+        return max_
 
     def go_through_trees(self, item): 
         # searches list of trees and all trees for cluster 
@@ -205,7 +223,7 @@ class AgloClusterModel:
             return val
                 
 
-    def build(self): 
+    def build(self, distance_metric): 
         i = 0
         for i in range(len(self.data)): 
             self.clusters.append([i])
@@ -224,7 +242,15 @@ class AgloClusterModel:
             cluster_distances = []
             
             for combo in cluster_combinations: 
-                cluster_distances.append(self.distance_between_clusters(combo[0], combo[1])) #[1], [2,3,4]
+                if distance_metric == "single": 
+                    d = self.distance_between_clusters_single(combo[0], combo[1])
+                elif distance_metric == "complete": 
+                    d = self.distance_between_clusters_comlete(combo[0], combo[1])
+                else: 
+                    d = self.distance_between_clusters_average(combo[0], combo[1])
+                
+                
+                cluster_distances.append(d) #[1], [2,3,4]
 
             # print("cluster distances ", cluster_distances)
             
@@ -279,7 +305,7 @@ class AgloClusterModel:
         # print("measuring", final_clusters, len(final_clusters)) 
         # self.final_clusters = final_clusters
         
-    def testAllThresholds(self):
+    def testAllThresholds(self, fname, distance_metric):
         thresholds = sorted(list(self.possibleThresholds))[1:-1]
         metrics = []
         numberClusters = []
@@ -290,18 +316,20 @@ class AgloClusterModel:
             numberClusters.append(len(clusters))
             print(f'\nThreshold: {t} {"^" * 20}')
             print("-" * 30)
+            if t == 19.026298: 
+                break
         asDf = pd.DataFrame({"thresholds": thresholds, "Metric": metrics, "# of Clusters": numberClusters})
         print(asDf)
         plt.plot(thresholds, metrics)
-        plt.title("Threshold vs Avg Cluster Radius / Avg InterCentroid Distance")
+        plt.title("Agglomerative for: {} distance metric = {}".format(fname, distance_metric))
         plt.xlabel('Threshold')
         plt.ylabel('Average Centroid Radius / Average Inter Cluster Distance')
         plt.show() 
 
 
     def visualize(self): 
-        colors = ["red", "yellow", "purple", "blue", "green", "pink", "brown", "black", "orange"]
-
+        #colors = ["red", "yellow", "purple", "blue", "green", "pink", "brown", "black", "orange", "lightblue", "teal", "lightpurple", "tan", "lightgrey"]
+        colors = ["red", "yellow", "purple", "blue", "green", "pink", "brown", "black", "orange", "salmon", "teal", "violet", "lawngreen", "indigo"]
         i = 0 
         x = []
         y = []
